@@ -1,0 +1,11 @@
+###
+GET http://localhost:3001/boy-groups
+
+###
+//PUT an existing card to a certain deck
+PUT http://localhost:3001/girl-groups/update
+
+###
+//PUT an existing card to a certain deck
+PUT http://localhost:3001/boy-groups/update
+
