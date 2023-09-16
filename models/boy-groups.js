@@ -13,6 +13,6 @@ const BoyGroupSchema = new Schema({
     },
 })
 
-const BoyGroup = mongoose.model("BoyGroup", BoyGroupSchema);
+const BoyGroup = mongoose.models.BoyGroup || mongoose.model("BoyGroup", BoyGroupSchema);
 
 export default BoyGroup;

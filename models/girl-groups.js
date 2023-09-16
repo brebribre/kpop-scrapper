@@ -13,6 +13,6 @@ const GirlGroupSchema = new Schema({
     },
 })
 
-const GirlGroup = mongoose.model("GirlGroup", GirlGroupSchema);
+const GirlGroup = mongoose.models.GirlGroup || mongoose.model("GirlGroup", GirlGroupSchema);
 
 export default GirlGroup;

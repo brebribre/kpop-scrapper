@@ -74,37 +74,24 @@ const getGirlGroups = async () => {
 };
 
 const getBoyGroups = async () => {
-    // Start a Puppeteer session with:
-    // - a visible browser (`headless: false` - easier to debug because you'll see the browser in action)
-    // - no default viewport (`defaultViewport: null` - website page will in full width and height)
     const browser = await puppeteer.launch({
       headless: false,
       defaultViewport: null,
     });
   
-    // Open a new page
     const page = await browser.newPage();
   
-    // On this new page:
-    // - open the "https://kprofiles.com/k-pop-girl-groups/" website
-    // - wait until the dom content is loaded (HTML is ready)
     await page.goto("https://kprofiles.com/k-pop-boy-groups/", {
       waitUntil: "domcontentloaded",
     });
   
     // Get page data
     const groups = await page.evaluate(() => {
-      // Fetch the first element with class "quote"
       const block = document.querySelector('#post-6 > div > div.col-lg-9.col-mod-single.col-mod-main > div.entry-content.herald-entry-content');
-  
-      // Fetch the sub-elements from the previously fetched quote element
-      // Get the displayed text and return it (`.innerText`)
       const groupNamesSelector = block.querySelectorAll('a');
   
-      // Create an array to store the inner text of all <a> elements
       const names = [];
   
-      // Iterate through the NodeList and extract the inner text of each <a> element
       groupNamesSelector.forEach((element) => {
           const href = element.getAttribute('href');
           const text = element.textContent
@@ -116,9 +103,32 @@ const getBoyGroups = async () => {
   
       return names;
     });
-  
-    return groups
+    return groups;   
+};
+
+const getIndividualGroup = async (childLink) => {
+  const browser = await puppeteer.launch({
+    headless: false,
+    defaultViewport: null,
+  });
+
+  const page = await browser.newPage();
+  const url = "https://kprofiles.com/" + childLink;
+
+  await page.goto(url, {
+    waitUntil: "domcontentloaded",
+  });
+
+  // Get page data
+  const groupBio = await page.evaluate(() => {
+    const title = document.querySelector('#post-34451 > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > header > h1').textContent;
+    const contentBlock = document.querySelector('#post-34451 > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > div > div.col-lg-10.col-md-10.col-sm-10 > div > p:nth-child(1)');
+    const groupImg = contentBlock.querySelector('img').getAttribute('src');
     
+    return {title,groupImg};
+  });
+  console.log(groupBio);
+  return groupBio;   
 };
 
 
@@ -191,6 +201,17 @@ app.put('/boy-groups/update', async (req,res)=>{
         }
   }
     return res.status(200).json({ message: 'BoyGroup Database updated successfully' });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+  
+});
+
+app.put('/group-bio/:childLink', async (req,res)=>{
+  try {
+    const groupBio = await getIndividualGroup(req.params.childLink);
+    return res.status(200).json({ message: 'Scrapping Database successful' });    
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });

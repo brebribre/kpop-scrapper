@@ -12,3 +12,6 @@ PUT http://localhost:3001/girl-groups/update
 //PUT an existing card to a certain deck
 PUT http://localhost:3001/boy-groups/update
 
+###
+//POST a new card and ASSIGN to a deck
+PUT http://localhost:3001/group-bio/itzy-members-profile
