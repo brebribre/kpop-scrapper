@@ -6,7 +6,7 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv';
 import GirlGroup from "./models/girl-groups.js";
 import BoyGroup from './models/boy-groups.js'
-import { formatMembers, formatText, getDataOnKeyword } from "./utils.js";
+import { formatMembers, formatText, getDataOnKeyword, getImgSrcFromHTML } from "./utils.js";
 
 dotenv.config({ path: '.env.local' });
 
@@ -23,8 +23,6 @@ mongoose.connect(mongoDBURI,{
 })
     .then(() => console.log("Connected to DB"))
     .catch(console.eror)
-
-
 
 const getGirlGroups = async () => {
   // Start a Puppeteer session with:
@@ -135,7 +133,7 @@ const getIndividualGroup = async (childLink) => {
     const doc = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > div > div.col-lg-10.col-md-10.col-sm-10 > div');
     const docLen = doc.querySelectorAll('p').length;
 
-    //3. get important elements like title and img
+    //3. get important elements like title and group img
     const title = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > header > h1').textContent;
     const contentBlock = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > div > div.col-lg-10.col-md-10.col-sm-10 > div > p:nth-child(1)');
     const groupImg = contentBlock.querySelector('img').getAttribute('src');
@@ -145,7 +143,7 @@ const getIndividualGroup = async (childLink) => {
     let tmp;
     for(let i = 5 ; i < docLen ; i++){
       tmp = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > div > div.col-lg-10.col-md-10.col-sm-10 > div > p:nth-child(' + i + ')');
-      contentLines.push(tmp.textContent)
+      contentLines.push(tmp.innerHTML)
     }
 
     return {title,groupImg, contentLines};
@@ -153,19 +151,25 @@ const getIndividualGroup = async (childLink) => {
 
   //5. format all of the lines inside contentLines
   for(let i = 0; i < groupBio.contentLines.length ; i++){
+    //TODO get the image
+    let img = getImgSrcFromHTML(groupBio.contentLines[i]);
+    //get the bio
     groupBio.contentLines[i] = formatText(groupBio.contentLines[i]);
+    if(img){
+      groupBio.contentLines[i].push(img);
+    }
+    
   }
+
 
   //6. Clean the data
   const informationBlocks = [];
   informationBlocks.push(getDataOnKeyword(groupBio.contentLines, "official account"));
+  informationBlocks.push(getDataOnKeyword(groupBio.contentLines, "official sites"));
   informationBlocks.push(getDataOnKeyword(groupBio.contentLines, "birth name"));
-  const members = formatMembers(getDataOnKeyword(groupBio.contentLines, "birth name"))
-
   groupBio.contentLines = informationBlocks;
-
-  console.log(members);
-
+  console.log(groupBio.contentLines)
+  
   return groupBio;   
 };
 

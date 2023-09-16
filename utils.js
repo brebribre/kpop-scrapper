@@ -1,3 +1,5 @@
+import { JSDOM } from 'jsdom';
+
 export function formatText(input){
    // Define a regular expression to match text inside angle brackets
   var regex = /<[^>]+>/g;
@@ -7,6 +9,23 @@ export function formatText(input){
   result = result.split('\n');
 
   return result;
+}
+
+export function getImgSrcFromHTML(input){
+   // Create a virtual DOM using jsdom
+   const dom = new JSDOM(input);
+
+   // Find the first <img> tag in the virtual DOM
+   const imgTag = dom.window.document.querySelector('img');
+
+   // Check if an <img> tag was found and if it has a src attribute
+   if (imgTag && imgTag.hasAttribute('src')) {
+      // Get the value of the src attribute
+      const srcAttribute = imgTag.getAttribute('src');
+      return "Image: " + srcAttribute;
+   } else {
+      return null; // Return null if no img tag with a src attribute is found
+   }
 }
 
 export function getDataOnKeyword(input, keyword){ 
@@ -39,13 +58,14 @@ export function formatMembers(input){
    for(let i = 0; i < input.length ; i++){
       let tmp = input[i];
       let member = {
-         stageName: "",
-         birthName: "",
-         position: "",
-         birthday: "",
-         nationality: "",
-         height: "",
-         weight: "",
+         stageName: null,
+         birthName: null,
+         position: null,
+         birthday: null,
+         nationality: null,
+         height: null,
+         weight: null,
+         img: null
       }
       
       for(let j = 0; j < tmp.length ; j++){
@@ -63,6 +83,8 @@ export function formatMembers(input){
          }else if(line.includes("weight")){
             member.weight = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
          }else if(line.includes("height")){
+            member.height = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+         }else if(line.includes("image")){
             member.height = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
          }
       }
