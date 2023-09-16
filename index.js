@@ -128,24 +128,37 @@ app.get('/boy-groups', async(req,res)=>{
     res.json(artists);
 });
 
+app.get('/girl-groups', async(req,res)=>{
+  const artists = await GirlGroup.find();
+
+  res.json(artists);
+});
+
 app.put('/girl-groups/update', async (req,res)=>{
     try {
         const girlGroups = await getGirlGroups();
 
         //check if group exist
-        
-
         for(let i = 0; i < girlGroups.length; i++){
+            
             const e = girlGroups[i];
-            const tmp = new GirlGroup({
+            const eName = e.name;
+            const checkDB = await GirlGroup.findOne({ name: eName })
+
+            if(checkDB){
+              //if group exist, only updates the values to the new one
+              console.log("Group exist, updating values...")
+              checkDB.name = e.name;
+              checkDB.link = e.link;
+            }else{
+              const tmp = new GirlGroup({
                 name: e.name,
                 link: e.link,
-            })
-            await tmp.save();
-
-    }
-    
-        return res.status(200).json({ message: 'Artists appended to deck successfully' });
+              })
+              await tmp.save();
+            }
+      }
+        return res.status(200).json({ message: 'GirlGroup Database updated successfully' });
       } catch (error) {
         console.error(error);
         return res.status(500).json({ error: 'Internal server error' });
@@ -156,27 +169,34 @@ app.put('/girl-groups/update', async (req,res)=>{
 app.put('/boy-groups/update', async (req,res)=>{
   try {
     const boyGroups = await getBoyGroups();
+
+    //check if group exist
     for(let i = 0; i < boyGroups.length; i++){
-      const e = boyGroups[i];
-      const tmp = new BoyGroup({
-          name: e.name,
-          link: e.link,
-      })
-      await tmp.save();
-    }
-    return res.status(200).json({ message: 'Artists appended to deck successfully' });
+        
+        const e = boyGroups[i];
+        const eName = e.name;
+        const checkDB = await BoyGroup.findOne({ name: eName })
+
+        if(checkDB){
+          //if group exist, only updates the values to the new one
+          console.log("Group exist, updating values...")
+          checkDB.name = e.name;
+          checkDB.link = e.link;
+        }else{
+          const tmp = new BoyGroup({
+            name: e.name,
+            link: e.link,
+          })
+          await tmp.save();
+        }
+  }
+    return res.status(200).json({ message: 'BoyGroup Database updated successfully' });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
   
 });
-
-
-
-
-
-
 
 app.listen(3001, () => {
     console.log('Server started on port 3001');
