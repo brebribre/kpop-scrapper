@@ -6,6 +6,7 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv';
 import GirlGroup from "./models/girl-groups.js";
 import BoyGroup from './models/boy-groups.js'
+import { formatText, getDataOnKeyword } from "./utils.js";
 
 dotenv.config({ path: '.env.local' });
 
@@ -107,6 +108,7 @@ const getBoyGroups = async () => {
 };
 
 const getIndividualGroup = async (childLink) => {
+  //initialize puppeteer and open browser
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: null,
@@ -121,29 +123,70 @@ const getIndividualGroup = async (childLink) => {
 
   // Get page data
   const groupBio = await page.evaluate(() => {
-    const title = document.querySelector('#post-34451 > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > header > h1').textContent;
-    const contentBlock = document.querySelector('#post-34451 > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > div > div.col-lg-10.col-md-10.col-sm-10 > div > p:nth-child(1)');
+
+    //1. get pageID
+    const elements = document.querySelectorAll("article");
+    let uniqueId;
+    if(elements[0].getAttribute('id')){
+      uniqueId = '#' + elements[0].getAttribute('id');
+    }
+
+    //2. get all content elements inside <p></p>
+    const doc = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > div > div.col-lg-10.col-md-10.col-sm-10 > div');
+    const docLen = doc.querySelectorAll('p').length;
+
+    //3. get important elements like title and img
+    const title = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > header > h1').textContent;
+    const contentBlock = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > div > div.col-lg-10.col-md-10.col-sm-10 > div > p:nth-child(1)');
     const groupImg = contentBlock.querySelector('img').getAttribute('src');
-    
-    return {title,groupImg};
+
+    //4. format all content lines, starting from index 2 
+    const contentLines = [];
+    let tmp;
+
+    for(let i = 5 ; i < docLen ; i++){
+      tmp = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > div > div.col-lg-10.col-md-10.col-sm-10 > div > p:nth-child(' + i + ')');
+      if(tmp){contentLines.push(tmp.textContent)};
+    }
+   
+    return {title,groupImg, contentLines};
   });
-  console.log(groupBio);
+
+  //5. format all of the lines
+  for(let i = 0; i < groupBio.contentLines.length ; i++){
+    groupBio.contentLines[i] = formatText(groupBio.contentLines[i]);
+  }
+
+  //TODO erase all unneeded informations
+  const informationBlocks = [];
+
+  //get official accounts
+  informationBlocks.push(getDataOnKeyword(groupBio.contentLines, "official account"));
+  informationBlocks.push(getDataOnKeyword(groupBio.contentLines, "birth name"));
+  groupBio.contentLines = informationBlocks;
+  console.log(groupBio.contentLines);
   return groupBio;   
 };
 
+//API Routers
 
+//returns list of boy groups with name and link attributes
 app.get('/boy-groups', async(req,res)=>{
     const artists = await BoyGroup.find();
 
     res.json(artists);
 });
 
+
+//returns list of girl groups with name and link attributes
 app.get('/girl-groups', async(req,res)=>{
   const artists = await GirlGroup.find();
 
   res.json(artists);
 });
 
+
+//Scrapes girl groups informations from 3rd party site, updates all new values on MongoDB
 app.put('/girl-groups/update', async (req,res)=>{
     try {
         const girlGroups = await getGirlGroups();
@@ -176,6 +219,8 @@ app.put('/girl-groups/update', async (req,res)=>{
     
 });
 
+
+//Scrapes boy groups informations from 3rd party site, updates all new values on MongoDB
 app.put('/boy-groups/update', async (req,res)=>{
   try {
     const boyGroups = await getBoyGroups();
@@ -208,6 +253,8 @@ app.put('/boy-groups/update', async (req,res)=>{
   
 });
 
+
+//Scrapes an individual kpop group site
 app.put('/group-bio/:childLink', async (req,res)=>{
   try {
     const groupBio = await getIndividualGroup(req.params.childLink);
@@ -218,6 +265,7 @@ app.put('/group-bio/:childLink', async (req,res)=>{
   }
   
 });
+
 
 app.listen(3001, () => {
     console.log('Server started on port 3001');
