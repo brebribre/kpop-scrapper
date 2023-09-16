@@ -6,7 +6,7 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv';
 import GirlGroup from "./models/girl-groups.js";
 import BoyGroup from './models/boy-groups.js'
-import { formatText, getDataOnKeyword } from "./utils.js";
+import { formatMembers, formatText, getDataOnKeyword } from "./utils.js";
 
 dotenv.config({ path: '.env.local' });
 
@@ -140,31 +140,32 @@ const getIndividualGroup = async (childLink) => {
     const contentBlock = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > div > div.col-lg-10.col-md-10.col-sm-10 > div > p:nth-child(1)');
     const groupImg = contentBlock.querySelector('img').getAttribute('src');
 
-    //4. format all content lines, starting from index 2 
+    //4. push all lines of content 
     const contentLines = [];
     let tmp;
-
     for(let i = 5 ; i < docLen ; i++){
       tmp = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > div > div.col-lg-10.col-md-10.col-sm-10 > div > p:nth-child(' + i + ')');
-      if(tmp){contentLines.push(tmp.textContent)};
+      contentLines.push(tmp.textContent)
     }
-   
+
     return {title,groupImg, contentLines};
   });
 
-  //5. format all of the lines
+  //5. format all of the lines inside contentLines
   for(let i = 0; i < groupBio.contentLines.length ; i++){
     groupBio.contentLines[i] = formatText(groupBio.contentLines[i]);
   }
 
-  //TODO erase all unneeded informations
+  //6. Clean the data
   const informationBlocks = [];
-
-  //get official accounts
   informationBlocks.push(getDataOnKeyword(groupBio.contentLines, "official account"));
   informationBlocks.push(getDataOnKeyword(groupBio.contentLines, "birth name"));
+  const members = formatMembers(getDataOnKeyword(groupBio.contentLines, "birth name"))
+
   groupBio.contentLines = informationBlocks;
-  console.log(groupBio.contentLines);
+
+  console.log(members);
+
   return groupBio;   
 };
 
@@ -258,6 +259,8 @@ app.put('/boy-groups/update', async (req,res)=>{
 app.put('/group-bio/:childLink', async (req,res)=>{
   try {
     const groupBio = await getIndividualGroup(req.params.childLink);
+    //TODO Put it into database
+
     return res.status(200).json({ message: 'Scrapping Database successful' });    
   } catch (error) {
     console.error(error);

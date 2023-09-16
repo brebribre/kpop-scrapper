@@ -27,3 +27,47 @@ export function getDataOnKeyword(input, keyword){
 
   return output;
 }
+
+/* 
+param: 
+   input:receives uncleaned array of strings of members
+
+returns: a Member[] object with clean attributes
+*/
+export function formatMembers(input){ 
+   const output = []
+   for(let i = 0; i < input.length ; i++){
+      let tmp = input[i];
+      let member = {
+         stageName: "",
+         birthName: "",
+         position: "",
+         birthday: "",
+         nationality: "",
+         height: "",
+         weight: "",
+      }
+      
+      for(let j = 0; j < tmp.length ; j++){
+         let line = tmp[j].toLowerCase();
+         if(line.includes("stage name")){
+            member.stageName = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+         }else if(line.includes("birth name")){
+            member.birthName = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+         }else if(line.includes("position")){
+            member.position = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+         }else if(line.includes("birthday")){
+            member.birthday = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+         }else if(line.includes("nationality")){
+            member.nationality = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+         }else if(line.includes("weight")){
+            member.weight = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+         }else if(line.includes("height")){
+            member.height = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+         }
+      }
+      output.push(member);
+   }
+ 
+   return output;
+ }

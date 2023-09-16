@@ -14,4 +14,4 @@ PUT http://localhost:3001/boy-groups/update
 
 ###
 //POST a new card and ASSIGN to a deck
-PUT http://localhost:3001/group-bio/ive-members-profile/
+PUT http://localhost:3001/group-bio/ateez-members-profile/
