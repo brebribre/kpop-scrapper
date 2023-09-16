@@ -146,7 +146,13 @@ const getIndividualGroup = async (childLink) => {
       contentLines.push(tmp.innerHTML)
     }
 
-    return {title,groupImg, contentLines};
+    return {
+      title:title,
+      groupImg:groupImg,
+      contentLines:contentLines,
+      members:null,
+      officialSites:null
+    };
   });
 
   //5. format all of the lines inside contentLines
@@ -163,14 +169,25 @@ const getIndividualGroup = async (childLink) => {
 
 
   //6. Clean the data
-  const informationBlocks = [];
-  informationBlocks.push(getDataOnKeyword(groupBio.contentLines, "official account"));
-  informationBlocks.push(getDataOnKeyword(groupBio.contentLines, "official sites"));
-  informationBlocks.push(getDataOnKeyword(groupBio.contentLines, "birth name"));
-  groupBio.contentLines = informationBlocks;
-  console.log(groupBio.contentLines)
+  const members = getDataOnKeyword(groupBio.contentLines, "birth name");
+  groupBio.members = formatMembers(members);
+
+  let sites = getDataOnKeyword(groupBio.contentLines, "official account");
+  if(sites.length < 1){
+    sites = getDataOnKeyword(groupBio.contentLines, "official sites");
+  }
+  groupBio.officialSites = sites;
   
-  return groupBio;   
+  const finalData = {
+    title: groupBio.title,
+    groupImg: groupBio.groupImg,
+    members: groupBio.members,
+    officialSites: groupBio.officialSites
+  }
+
+  console.log(finalData);
+
+  return finalData;   
 };
 
 //API Routers

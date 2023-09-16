@@ -85,7 +85,7 @@ export function formatMembers(input){
          }else if(line.includes("height")){
             member.height = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
          }else if(line.includes("image")){
-            member.height = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+            member.img = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
          }
       }
       output.push(member);
