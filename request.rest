@@ -2,6 +2,9 @@
 GET http://localhost:3001/boy-groups
 
 ###
+GET http://localhost:3001/girl-groups
+
+###
 //PUT an existing card to a certain deck
 PUT http://localhost:3001/girl-groups/update
 
