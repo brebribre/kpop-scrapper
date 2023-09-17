@@ -6,7 +6,7 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv';
 import GirlGroup from "./models/girl-groups.js";
 import BoyGroup from './models/boy-groups.js'
-import { formatMembers, formatText, getDataOnKeyword, getImgSrcFromHTML } from "./utils.js";
+import { formatMembers, removeTagsFromHTML, getDataOnKeyword2D, getImgSrcFromHTML, formatOfficialSites } from "./utils.js";
 
 dotenv.config({ path: '.env.local' });
 
@@ -24,7 +24,7 @@ mongoose.connect(mongoDBURI,{
     .then(() => console.log("Connected to DB"))
     .catch(console.eror)
 
-const getGirlGroups = async () => {
+const scrapeGirlGroups = async () => {
   // Start a Puppeteer session with:
   // - a visible browser (`headless: false` - easier to debug because you'll see the browser in action)
   // - no default viewport (`defaultViewport: null` - website page will in full width and height)
@@ -72,7 +72,7 @@ const getGirlGroups = async () => {
   
 };
 
-const getBoyGroups = async () => {
+const scrapeBoyGroups = async () => {
     const browser = await puppeteer.launch({
       headless: false,
       defaultViewport: null,
@@ -105,7 +105,7 @@ const getBoyGroups = async () => {
     return groups;   
 };
 
-const getIndividualGroup = async (childLink) => {
+const scrapeIndividualGroup = async (childLink) => {
   //initialize puppeteer and open browser
   const browser = await puppeteer.launch({
     headless: false,
@@ -129,14 +129,13 @@ const getIndividualGroup = async (childLink) => {
       uniqueId = '#' + elements[0].getAttribute('id');
     }
 
-    //2. get all content elements inside <p></p>
     const doc = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > div > div.col-lg-10.col-md-10.col-sm-10 > div');
     const docLen = doc.querySelectorAll('p').length;
 
-    //3. get important elements like title and group img
-    const title = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > header > h1').textContent;
-    const contentBlock = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > div > div.col-lg-10.col-md-10.col-sm-10 > div > p:nth-child(1)');
-    const groupImg = contentBlock.querySelector('img').getAttribute('src');
+    //2. get important elements like group name and group img
+    let groupName = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > header > h1').textContent;
+    groupName = groupName.replace("Members Profile", '').trim();
+    const groupImg = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > div > div.col-lg-10.col-md-10.col-sm-10 > div > p:nth-child(1)').querySelector('img').getAttribute('src');
 
     //4. push all lines of content 
     const contentLines = [];
@@ -147,46 +146,46 @@ const getIndividualGroup = async (childLink) => {
     }
 
     return {
-      title:title,
+      groupName:groupName,
       groupImg:groupImg,
       contentLines:contentLines,
       members:null,
-      officialSites:null
+      officialSites:[]
     };
+    
   });
 
   //5. format all of the lines inside contentLines
   for(let i = 0; i < groupBio.contentLines.length ; i++){
-    //TODO get the image
+    //TODO get the image of members
     let img = getImgSrcFromHTML(groupBio.contentLines[i]);
     //get the bio
-    groupBio.contentLines[i] = formatText(groupBio.contentLines[i]);
+    groupBio.contentLines[i] = removeTagsFromHTML(groupBio.contentLines[i]);
     if(img){
       groupBio.contentLines[i].push(img);
     }
-    
   }
 
 
   //6. Clean the data
-  const members = getDataOnKeyword(groupBio.contentLines, "birth name");
+  const members = getDataOnKeyword2D(groupBio.contentLines, "birth name");
   groupBio.members = formatMembers(members);
 
-  let sites = getDataOnKeyword(groupBio.contentLines, "official account");
-  if(sites.length < 1){
-    sites = getDataOnKeyword(groupBio.contentLines, "official sites");
+  let uncleanedSites = getDataOnKeyword2D(groupBio.contentLines, "official account");
+  if(uncleanedSites.length < 1){
+    uncleanedSites = getDataOnKeyword2D(groupBio.contentLines, "official sites");
   }
-  groupBio.officialSites = sites;
+  
+
+  groupBio.officialSites = formatOfficialSites(uncleanedSites);
   
   const finalData = {
-    title: groupBio.title,
+    groupName: groupBio.groupName,
     groupImg: groupBio.groupImg,
     members: groupBio.members,
     officialSites: groupBio.officialSites
   }
-
-  console.log(finalData);
-
+  console.log(finalData)
   return finalData;   
 };
 
@@ -211,7 +210,7 @@ app.get('/girl-groups', async(req,res)=>{
 //Scrapes girl groups informations from 3rd party site, updates all new values on MongoDB
 app.put('/girl-groups/update', async (req,res)=>{
     try {
-        const girlGroups = await getGirlGroups();
+        const girlGroups = await scrapeGirlGroups();
 
         //check if group exist
         for(let i = 0; i < girlGroups.length; i++){
@@ -245,7 +244,7 @@ app.put('/girl-groups/update', async (req,res)=>{
 //Scrapes boy groups informations from 3rd party site, updates all new values on MongoDB
 app.put('/boy-groups/update', async (req,res)=>{
   try {
-    const boyGroups = await getBoyGroups();
+    const boyGroups = await scrapeBoyGroups();
 
     //check if group exist
     for(let i = 0; i < boyGroups.length; i++){
@@ -279,7 +278,7 @@ app.put('/boy-groups/update', async (req,res)=>{
 //Scrapes an individual kpop group site
 app.put('/group-bio/:childLink', async (req,res)=>{
   try {
-    const groupBio = await getIndividualGroup(req.params.childLink);
+    const groupBio = await scrapeIndividualGroup(req.params.childLink);
     //TODO Put it into database
 
     return res.status(200).json({ message: 'Scrapping Database successful' });    

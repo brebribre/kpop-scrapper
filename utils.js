@@ -1,6 +1,6 @@
 import { JSDOM } from 'jsdom';
 
-export function formatText(input){
+export function removeTagsFromHTML(input){
    // Define a regular expression to match text inside angle brackets
   var regex = /<[^>]+>/g;
 
@@ -10,6 +10,12 @@ export function formatText(input){
 
   return result;
 }
+
+function removeNbspFromString(inputString) {
+   var outputString = inputString.replace(/&nbsp;/g, '');
+ 
+   return outputString;
+ }
 
 export function getImgSrcFromHTML(input){
    // Create a virtual DOM using jsdom
@@ -28,24 +34,24 @@ export function getImgSrcFromHTML(input){
    }
 }
 
-export function getDataOnKeyword(input, keyword){ 
-  const output = []
-  let tmp;
-
-  for(let i = 0; i < input.length ; i++){
-      tmp = input[i];
-      //check all elements within input[i] and check if any of them contains any keywords
-      for(let j = 0; j < tmp.length; j++){
-         let element = tmp[j].toLowerCase();
-
-         if(element.includes(keyword)){
-            output.push(tmp);
-         }
-      }
-  }
-
-  return output;
+export function getDataOnKeyword2D(input, keyword){ 
+   const output = []
+   let tmp;
+ 
+   for(let i = 0; i < input.length ; i++){
+       tmp = input[i];
+       for(let j = 0; j < tmp.length; j++){
+          let element = tmp[j].toLowerCase();
+ 
+          if(element.includes(keyword)){
+             output.push(tmp);
+          }
+       }
+   }
+   return output;
 }
+
+
 
 /* 
 param: 
@@ -54,7 +60,9 @@ param:
 returns: a Member[] object with clean attributes
 */
 export function formatMembers(input){ 
-   const output = []
+   const output = [];
+   
+ 
    for(let i = 0; i < input.length ; i++){
       let tmp = input[i];
       let member = {
@@ -70,26 +78,90 @@ export function formatMembers(input){
       
       for(let j = 0; j < tmp.length ; j++){
          let line = tmp[j].toLowerCase();
+         
+         //Find member informations based on specific keywords, then format it to fit DB.
          if(line.includes("stage name")){
-            member.stageName = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+            member.stageName = removeNbspFromString(tmp[j].substring(tmp[j].indexOf(":") + 1).trim());
          }else if(line.includes("birth name")){
-            member.birthName = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+            member.birthName = removeNbspFromString(tmp[j].substring(tmp[j].indexOf(":") + 1).trim());
          }else if(line.includes("position")){
-            member.position = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+            member.position = removeNbspFromString(tmp[j].substring(tmp[j].indexOf(":") + 1).trim());
          }else if(line.includes("birthday")){
-            member.birthday = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+            member.birthday = removeNbspFromString(tmp[j].substring(tmp[j].indexOf(":") + 1).trim());
          }else if(line.includes("nationality")){
-            member.nationality = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+            member.nationality = removeNbspFromString(tmp[j].substring(tmp[j].indexOf(":") + 1).trim());
          }else if(line.includes("weight")){
-            member.weight = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+            member.weight = removeNbspFromString(tmp[j].substring(tmp[j].indexOf(":") + 1).trim());
          }else if(line.includes("height")){
-            member.height = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+            member.height = removeNbspFromString(tmp[j].substring(tmp[j].indexOf(":") + 1).trim());
          }else if(line.includes("image")){
-            member.img = tmp[j].substring(tmp[j].indexOf(":") + 1).trim();
+            member.img = removeNbspFromString(tmp[j].substring(tmp[j].indexOf(":") + 1).trim());
          }
       }
+
       output.push(member);
    }
  
    return output;
- }
+}
+
+/* 
+param: 
+   input:receives uncleaned array of strings of sites string[]
+
+returns: a Sites[] object with clean attributes
+*/
+export function formatOfficialSites(input){
+   input = input[0];
+   const websites = [];
+   const instagrams = [];
+   const twitters = [];
+   const youtubes = [];
+
+   for(let j = 0; j < input.length ; j++){
+      let line = input[j];
+      
+      //Find member informations based on specific keywords, then format it to fit DB.
+      if(line.includes("YouTube")){
+         let formatting = removeNbspFromString(input[j].substring(input[j].indexOf(":") + 1).trim());
+         youtubes.push(formatting);
+      
+      }else if(line.includes("Instagram")){
+         let formatting = removeNbspFromString(input[j].substring(input[j].indexOf(":") + 1).trim());
+         instagrams.push(formatting);
+         
+      }else if(line.includes("Twitter")){
+         let formatting = removeNbspFromString(input[j].substring(input[j].indexOf(":") + 1).trim());
+         twitters.push(formatting);
+       
+      }else if(line.includes("Website")){
+         let formatting = removeNbspFromString(input[j].substring(input[j].indexOf(":") + 1).trim());
+         websites.push(formatting);
+         
+      
+      }
+      
+   }
+
+   let allSites = [
+      {
+         type : "twitter",
+         links : twitters
+      },
+      {
+         type : "website",
+         links: websites
+      },
+      {
+         type : "instagram",
+         links : instagrams
+      },
+      {
+         type : "youtube",
+         links : youtubes
+      },
+   ]
+ 
+   return allSites;
+}
+
