@@ -11,4 +11,10 @@ PUT http://localhost:3001/girl-groups/update
 PUT http://localhost:3001/boy-groups/update
 
 ###
-PUT http://localhost:3001/group-bio/aespa-members-profile/
+PUT http://localhost:3001/group-bio/cherish-members-profile-facts/
+
+###
+PUT http://localhost:3001/boy-group-bio/update
+
+###
+PUT http://localhost:3001/girl-group-bio/update

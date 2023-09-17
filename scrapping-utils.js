@@ -153,11 +153,13 @@ const scrapeIndividualGroup = async (childLink) => {
   
     let uncleanedSites = getDataOnKeyword(groupBio.contentLines, "official account");
     if(uncleanedSites.length < 1){
-      uncleanedSites = getDataOnKeyword(groupBio.contentLines, "official sites");
+      uncleanedSites = getDataOnKeyword(groupBio.contentLines, "official s");
     }
     
-  
-    groupBio.officialSites = formatOfficialSites(uncleanedSites);
+    if(uncleanedSites){
+      groupBio.officialSites = formatOfficialSites(uncleanedSites);
+    }
+    
     
     const finalData = {
       groupName: groupBio.groupName,
@@ -165,6 +167,8 @@ const scrapeIndividualGroup = async (childLink) => {
       members: groupBio.members,
       officialSites: groupBio.officialSites
     }
+
+    await browser.close();
     return finalData;   
 };
 

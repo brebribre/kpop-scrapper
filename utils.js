@@ -11,6 +11,16 @@ export function removeTagsFromHTML(input){
   return result;
 }
 
+export function cutStringAfterKeyword(inputString, keyword) {
+   const keywordIndex = inputString.indexOf(keyword);
+   
+   if (keywordIndex !== -1) {
+     return inputString.slice(keywordIndex + keyword.length);
+   }
+   
+   return "Keyword not found in the string";
+ }
+
 function removeNbspFromString(inputString) {
    var outputString = inputString.replace(/&nbsp;/g, '');
  
@@ -147,31 +157,35 @@ export function formatOfficialSites(input){
    const instagrams = [];
    const twitters = [];
    const youtubes = [];
-
-   for(let j = 0; j < input.length ; j++){
-      let line = input[j];
-      
-      //Find member informations based on specific keywords, then format it to fit DB.
-      if(line.includes("YouTube")){
-         let formatting = removeNbspFromString(input[j].substring(input[j].indexOf(":") + 1).trim());
-         youtubes.push(formatting);
-      
-      }else if(line.includes("Instagram")){
-         let formatting = removeNbspFromString(input[j].substring(input[j].indexOf(":") + 1).trim());
-         instagrams.push(formatting);
+   //check if input is valid
+   if(input){
+      for(let j = 0; j < input.length ; j++){
+         let line = input[j];
          
-      }else if(line.includes("Twitter")){
-         let formatting = removeNbspFromString(input[j].substring(input[j].indexOf(":") + 1).trim());
-         twitters.push(formatting);
-       
-      }else if(line.includes("Website")){
-         let formatting = removeNbspFromString(input[j].substring(input[j].indexOf(":") + 1).trim());
-         websites.push(formatting);
+         //Find member informations based on specific keywords, then format it to fit DB.
+         if(line.includes("YouTube")){
+            let formatting = removeNbspFromString(input[j].substring(input[j].indexOf(":") + 1).trim());
+            youtubes.push(formatting);
          
-      
+         }else if(line.includes("Instagram")){
+            let formatting = removeNbspFromString(input[j].substring(input[j].indexOf(":") + 1).trim());
+            instagrams.push(formatting);
+            
+         }else if(line.includes("Twitter")){
+            let formatting = removeNbspFromString(input[j].substring(input[j].indexOf(":") + 1).trim());
+            twitters.push(formatting);
+          
+         }else if(line.includes("Website")){
+            let formatting = removeNbspFromString(input[j].substring(input[j].indexOf(":") + 1).trim());
+            websites.push(formatting);
+            
+         
+         }
+         
       }
-      
    }
+
+   
 
    let allSites = [
       {
