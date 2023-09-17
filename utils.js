@@ -34,7 +34,7 @@ export function getImgSrcFromHTML(input){
    }
 }
 
-export function getDataOnKeyword2D(input, keyword){ 
+export function getDataOnKeyword(input, keyword){ 
    const output = []
    let tmp;
  
@@ -46,7 +46,37 @@ export function getDataOnKeyword2D(input, keyword){
           if(element.includes(keyword)){
              output.push(tmp);
           }
+
        }
+   }
+   return output;
+}
+
+export function getDataOnKeywords(input, keywords){ 
+   const output = [];
+
+   //var for validation of data
+   let v1 = false;
+   let v2 = false;
+
+   let tmp;
+ 
+   for(let i = 0; i < input.length ; i++){
+       tmp = input[i];
+       for(let j = 0; j < tmp.length; j++){
+          let element = tmp[j].toLowerCase();
+ 
+          if(element.includes(keywords[0])){
+             v1 = true
+          }else if(element.includes(keywords[1])){
+             v2 = true
+          }
+          
+       }
+       if(v1 && v2){
+         output.push(tmp);
+       }
+       
    }
    return output;
 }
