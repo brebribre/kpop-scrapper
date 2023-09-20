@@ -21,6 +21,18 @@ export function cutStringAfterKeyword(inputString, keyword) {
    return "Keyword not found in the string";
  }
 
+
+
+export function removeKeywordFromString(inputString, keywordToRemove) {
+  // Use a regular expression with the 'g' flag to replace all occurrences of the keyword
+  const regex = new RegExp(keywordToRemove, 'g');
+  
+  // Use the replace method to remove the keyword
+  const resultString = inputString.replace(regex, '');
+
+  return resultString;
+}
+
 function removeNbspFromString(inputString) {
    var outputString = inputString.replace(/&nbsp;/g, '');
  
@@ -101,7 +113,6 @@ returns: a Member[] object with clean attributes
 */
 export function formatMembers(input){ 
    const output = [];
-   
  
    for(let i = 0; i < input.length ; i++){
       let tmp = input[i];
@@ -113,7 +124,7 @@ export function formatMembers(input){
          nationality: null,
          height: null,
          weight: null,
-         img: null
+         img: null,
       }
       
       for(let j = 0; j < tmp.length ; j++){
@@ -137,6 +148,7 @@ export function formatMembers(input){
          }else if(line.includes("image")){
             member.img = removeNbspFromString(tmp[j].substring(tmp[j].indexOf(":") + 1).trim());
          }
+
       }
 
       output.push(member);

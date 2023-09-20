@@ -5,16 +5,25 @@ GET http://localhost:3001/boy-groups
 GET http://localhost:3001/girl-groups
 
 ###
+GET http://localhost:3001/boy-groups-bios
+
+###
 PUT http://localhost:3001/girl-groups/update
 
 ###
 PUT http://localhost:3001/boy-groups/update
 
 ###
-PUT http://localhost:3001/group-bio/cherish-members-profile-facts/
+PUT http://localhost:3001/girl-group-bio/cherish-members-profile-facts/
 
 ###
-PUT http://localhost:3001/boy-group-bio/update
+PUT http://localhost:3001/boy-group-bio/rhythm-power-members-profile/
 
 ###
-PUT http://localhost:3001/girl-group-bio/update
+PUT http://localhost:3001/update-all/boy-group-bio
+
+###
+PUT http://localhost:3001/update-all/girl-group-bio
+
+###
+DELETE http://localhost:3001/boy-group-bio/deleteAll

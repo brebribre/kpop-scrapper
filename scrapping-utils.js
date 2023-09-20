@@ -69,12 +69,15 @@ const scrapeBoyGroups = async () => {
         const names = [];
     
         groupNamesSelector.forEach((element) => {
-            const href = element.getAttribute('href');
-            const text = element.textContent
-            names.push({
-              name: text,
-              link: href
-            });
+            if(element){
+              const href = element.getAttribute('href');
+              const text = element.textContent
+              names.push({
+                name: text,
+                link: href
+              });
+            }
+            
         });
     
         return names;
@@ -110,8 +113,8 @@ const scrapeIndividualGroup = async (childLink) => {
       const docLen = doc.querySelectorAll('p').length;
   
       //2. get important elements like group name and group img
-      let groupName = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > header > h1').textContent;
-      groupName = groupName.replace("Members Profile", '').trim();
+      let head = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > header > h1');
+      if(head) groupName = head.textContent.replace("Members Profile", '').trim();
       const groupImg = document.querySelector(uniqueId + ' > div > div.col-lg-9.col-md-9.col-mod-single.col-mod-main > div > div.col-lg-10.col-md-10.col-sm-10 > div > p:nth-child(1)').querySelector('img').getAttribute('src');
   
       //4. push all lines of content 
@@ -146,16 +149,17 @@ const scrapeIndividualGroup = async (childLink) => {
       }
     }
   
-  
     //6. Clean the data
     const members = getDataOnKeyword(groupBio.contentLines, "birth name");
+    //format them into objects
     groupBio.members = formatMembers(members);
-  
+    
+    //get official sites
     let uncleanedSites = getDataOnKeyword(groupBio.contentLines, "official account");
     if(uncleanedSites.length < 1){
       uncleanedSites = getDataOnKeyword(groupBio.contentLines, "official s");
     }
-    
+    //clean official sites, format into objects
     if(uncleanedSites){
       groupBio.officialSites = formatOfficialSites(uncleanedSites);
     }
@@ -168,7 +172,9 @@ const scrapeIndividualGroup = async (childLink) => {
       officialSites: groupBio.officialSites
     }
 
+    console.log(finalData)
     await browser.close();
+
     return finalData;   
 };
 
