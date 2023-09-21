@@ -29,7 +29,6 @@ export function removeKeywordFromString(inputString, keywordToRemove) {
   
   // Use the replace method to remove the keyword
   const resultString = inputString.replace(regex, '');
-
   return resultString;
 }
 

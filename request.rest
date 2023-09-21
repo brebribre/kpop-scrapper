@@ -8,6 +8,9 @@ GET http://localhost:3001/girl-groups
 GET http://localhost:3001/boy-groups-bios
 
 ###
+GET http://localhost:3001/girl-groups-bios
+
+###
 PUT http://localhost:3001/girl-groups/update
 
 ###

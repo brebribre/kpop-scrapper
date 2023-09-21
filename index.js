@@ -58,6 +58,28 @@ app.get('/boy-groups-bios', async(req,res)=>{
 });
 
 
+//returns list of girl groups with name and link attributes
+app.get('/girl-groups-bios', async(req,res)=>{
+  const artists = await GirlGroupBio.find();
+ 
+  for(let i = 0; i < artists.length; i++){
+    console.log(artists[i].groupName)
+   
+    let name = removeKeywordFromString(artists[i].groupName, "Profile");
+   
+    name = name.trim()
+    artists[i].groupName = name;
+
+    artists[i].save();
+    
+   
+  
+  }
+    
+  res.json(artists);
+});
+
+
 //Scrapes girl groups informations from 3rd party site, updates all new values on MongoDB
 app.put('/girl-groups/update', async (req,res)=>{
     try {
