@@ -310,58 +310,76 @@ app.put('/update-all/boy-group-bio', async (req,res)=>{
 });
 
 //Scrapes ALL individual boy kpop group site
-app.put('update-all/girl-group-bio', async (req,res)=>{
+app.put('/update-all/girl-group-bio', async (req,res)=>{
   try {
     //Get all sublinks of boy groups
     const girlGroups = await GirlGroup.find();
+
     const links = [];
         for(let i = 0; i < girlGroups.length; i++){
+            
             const tmp = girlGroups[i];
             const subLink = cutStringAfterKeyword(tmp.link, "https://kprofiles.com/");
             links.push(subLink)
         }
-  
-    //SCRAPE ALL INDIVIDUAL LINKS
-    for(let i = 1 ; i < links.length ; i++){
-        console.log(i);
-        const groupBio = await scrapeIndividualGroup(links[i]);
 
-        const tmpMembers = [];
-        for(let j = 0 ; j < groupBio.members.length ; j++){
-            let element = groupBio.members[j];
-            
-            const memberData = new Member({
-              stageName: element.stageName,
-              birthName: element.birthName,
-              position: element.position,
-              birthday: element.birthday,
-              nationality: element.nationality,
-              height: element.height,
-              weight: element.weight,
-              img: element.image,
-            })
-            await memberData.save();
-            tmpMembers.push(memberData);
-        }
+
+    for(let i = 204 ; i < links.length ; i++){
+      console.log(i);
+      const groupBio = await scrapeIndividualGroup(links[i]);
+      const tmpMembers = [];
       
-
-        const tmp = new GirlGroupBio({
-          groupName: groupBio.groupName,
-          groupImg: groupBio.groupImg,
-          members: tmpMembers,
-          officialSites : groupBio.officialSites
+      for(let i = 0 ; i < groupBio.members.length ; i++){
+        let element = groupBio.members[i];
+  
+        const memberData = new Member({
+          stageName: element.stageName,
+          birthName: element.birthName,
+          position: element.position,
+          birthday: element.birthday,
+          nationality: element.nationality,
+          height: element.height,
+          weight: element.weight,
+          img: element.img,
         })
-
+  
+        const memberExist = await Member.findOne({ stageName: memberData.stageName, birthday: memberData.birthday })
+        if(memberExist){
+          console.log("Member already exist");
+          tmpMembers.push(memberExist);
+        }else{
+          memberData.save();
+          tmpMembers.push(memberData);
+        }
+      }
+      const tmp = new GirlGroupBio({
+        groupName: groupBio.groupName,
+        groupImg: groupBio.groupImg,
+        members: tmpMembers,
+        officialSites : groupBio.officialSites
+      })
+  
+      const groupInDB = await GirlGroupBio.findOne({ groupName: tmp.groupName });
+  
+      if(groupInDB){
+        console.log("Group already exist, updating values...");
+        groupInDB.groupName = tmp.groupName;
+        groupInDB.groupImg = tmp.groupImg;
+        groupInDB.members = tmp.members;
+        groupInDB.officialSites = tmp.officialSites;
+        groupInDB.save();
+      }else{
+        console.log("Group doesn't exist, putting new values...");
         await tmp.save();
+      }
+       
     }
-
 
     return res.status(200).json({ message: 'Scrapping Database successful' });    
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Internal server error' });
   }
-  
 });
 
 app.delete('/boy-group-bio/deleteAll', async (req, res) => {

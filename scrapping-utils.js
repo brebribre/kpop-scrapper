@@ -172,7 +172,7 @@ const scrapeIndividualGroup = async (childLink) => {
       officialSites: groupBio.officialSites
     }
 
-    console.log(finalData)
+ 
     await browser.close();
 
     return finalData;   
