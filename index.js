@@ -53,6 +53,20 @@ app.get('/boy-groups-bios', async(req,res)=>{
 
   for(let i = 0; i < artists.length; i++){
     console.log(artists[i].groupName);
+    let name = removeKeywordFromString(artists[i].groupName, "Members profile");
+    name = removeKeywordFromString(name, " ; Epik High’s Ideal Type");
+    name = removeKeywordFromString(name, " : KNK Facts, KNK Ideal Types");
+    name = removeKeywordFromString(name, " And Facts");
+    name = removeKeywordFromString(name, "Member");
+    name = removeKeywordFromString(name, ": BTS Facts; BTS Ideal Type");
+    name = removeKeywordFromString(name, "(Updated!)");
+    name = removeKeywordFromString(name, "(Formerly known as W.A.O)");
+    name = removeKeywordFromString(name, "(YG New Boy Group)");
+    name = removeKeywordFromString(name, "(Updated!)");
+    name = removeKeywordFromString(name, "(Formerly known as W.A.O)");
+    name = name.trim()
+    artists[i].groupName = name;
+    artists[i].save();
   }
   res.json(artists);
 });
@@ -154,7 +168,7 @@ app.put('/girl-group-bio/:childLink', async (req,res)=>{
     const groupBio = await scrapeIndividualGroup(req.params.childLink);
 
     const tmpMembers = [];
-    
+   
 
     for(let i = 0 ; i < groupBio.members.length ; i++){
       let element = groupBio.members[i];
@@ -199,7 +213,7 @@ app.put('/boy-group-bio/:childLink', async (req,res)=>{
   
     const tmpMembers = [];
     
-
+    console.log(groupBio.members.length)
     for(let i = 0 ; i < groupBio.members.length ; i++){
       let element = groupBio.members[i];
 
@@ -212,13 +226,13 @@ app.put('/boy-group-bio/:childLink', async (req,res)=>{
         nationality: element.nationality,
         height: element.height,
         weight: element.weight,
-        img: element.image,
+        img: element.img,
       })
 
       const memberExist = await Member.findOne({ stageName: memberData.stageName, birthday: memberData.birthday })
       if(memberExist){
-        console.log("Member already exist");
-        tmpMembers.push(memberExist);
+        memberData.save();
+        tmpMembers.push(memberData);
       }else{
         memberData.save();
         tmpMembers.push(memberData);
@@ -272,7 +286,7 @@ app.put('/update-all/boy-group-bio', async (req,res)=>{
         }
 
 
-    for(let i = 321 ; i < links.length ; i++){
+    for(let i = 337 ; i < links.length ; i++){
       console.log(i);
       const groupBio = await scrapeIndividualGroup(links[i]);
       const tmpMembers = [];

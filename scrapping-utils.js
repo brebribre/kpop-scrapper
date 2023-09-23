@@ -142,17 +142,21 @@ const scrapeIndividualGroup = async (childLink) => {
     for(let i = 0; i < groupBio.contentLines.length ; i++){
       //TODO get the image of members
       let img = getImgSrcFromHTML(groupBio.contentLines[i]);
+   
       //get the bio
       groupBio.contentLines[i] = removeTagsFromHTML(groupBio.contentLines[i]);
       if(img){
         groupBio.contentLines[i].push(img);
       }
     }
-  
+    
+    console.log(groupBio.contentLines)
     //6. Clean the data
-    const members = getDataOnKeyword(groupBio.contentLines, "birth name");
+    const members = getDataOnKeyword(groupBio.contentLines, "stage name");
+    
     //format them into objects
     groupBio.members = formatMembers(members);
+    console.log(groupBio.members)
     
     //get official sites
     let uncleanedSites = getDataOnKeyword(groupBio.contentLines, "official account");

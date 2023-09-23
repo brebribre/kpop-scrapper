@@ -20,7 +20,7 @@ PUT http://localhost:3001/boy-groups/update
 PUT http://localhost:3001/girl-group-bio/cherish-members-profile-facts/
 
 ###
-PUT http://localhost:3001/boy-group-bio/rhythm-power-members-profile/
+PUT http://localhost:3001/boy-group-bio/stray-kids-members-profile/
 
 ###
 PUT http://localhost:3001/update-all/boy-group-bio
