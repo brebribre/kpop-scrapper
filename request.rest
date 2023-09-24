@@ -1,8 +1,4 @@
-###
-GET http://localhost:3001/boy-groups
 
-###
-GET http://localhost:3001/girl-groups
 
 ###
 GET http://localhost:3001/boy-groups-bios
@@ -17,7 +13,7 @@ PUT http://localhost:3001/girl-groups/update
 PUT http://localhost:3001/boy-groups/update
 
 ###
-PUT http://localhost:3001/girl-group-bio/cherish-members-profile-facts/
+PUT http://localhost:3001/girl-group-bio/vcha-members-profile/
 
 ###
 PUT http://localhost:3001/boy-group-bio/stray-kids-members-profile/
@@ -30,3 +26,7 @@ PUT http://localhost:3001/update-all/girl-group-bio
 
 ###
 DELETE http://localhost:3001/boy-group-bio/deleteAll
+
+//receives Group Name and Member Id as parameter, delete member from said group.
+###
+DELETE http://localhost:3001/girl-group-bio/deleteMember/VCHA/6510526d27f51aa0ea3c62ad

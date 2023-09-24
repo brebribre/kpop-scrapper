@@ -181,7 +181,7 @@ app.put('/girl-group-bio/:childLink', async (req,res)=>{
         nationality: element.nationality,
         height: element.height,
         weight: element.weight,
-        img: element.image,
+        img: element.img,
       })
       memberData.save();
       tmpMembers.push(memberData);
@@ -422,6 +422,36 @@ app.delete('/boy-group-bio/deleteAll', async (req, res) => {
   try {
     // Delete all documents in the "members" collection
     await Member.deleteMany({});
+    res.status(204).send();
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+
+app.delete('/girl-group-bio/deleteMember/:groupName/:memberId', async (req, res) => {
+  try {
+    //find the group in DB
+    const groupInDB = await GirlGroupBio.findOne({ groupName: req.params.groupName });
+    //find member
+    const members = groupInDB.toJSON().members;
+    const output = [];
+    for(let i = 0; i < members.length ; i++){
+      if(members[i]._id.toString() === req.params.memberId){
+        console.log("Member found!");
+        
+      }else{
+        console.log("not this member!");
+        output.push(members[i])
+      }
+    }
+    console.log(output);
+    groupInDB.members = output;
+    await groupInDB.save();
+
     res.status(204).send();
   } catch (error) {
     console.error(error);
